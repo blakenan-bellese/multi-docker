@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  -docker build -t blakenan-bellese/react-test -f /client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true blakenan-bellese/react-test npm test
+
+after_success:
+  - docker built -t blakenan-bellese/multi-client ./client
+  - docker built -t blakenan-bellese/multi-nginx ./nginx
+  - docker built -t blakenan-bellese/multi-server ./server
+  - docker built -t blakenan-bellese/multi-worker ./worker
+#log in to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" ==password-stdin
+# push images
+  - docker push blakenan-bellese/multi-client
+  - docker push blakenan-bellese/multi-nginx
+  - docker push blakenan-bellese/multi-server
+  - docker push blakenan-bellese/multi-worker
